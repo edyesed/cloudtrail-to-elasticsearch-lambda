@@ -1,0 +1,112 @@
+# read cloudtrail things dropped off at s3, put them in ES
+## MINOR DRAGONS
+## MINOR DRAGONS
+##  I ran this with `S3_BUCKET=edyesed-cloudtrail-lambda serverless deploy 
+##  serverless did a little string jiggerypokery, and turned that into
+##   S3BucketEdyesedcloudtraillambda
+##  Your source bucket will be modified in the same way
+##  
+## MINOR DRAGONS
+## MINOR DRAGONS
+service: cloudtrailindexer
+
+provider:
+  name: aws
+  runtime: python2.7
+
+# you can overwrite defaults here
+#  stage: dev
+  region: us-west-2
+  environment:
+    ELASTICSEARCH_URL: ${env:ELASTICSEARCH_URL}
+
+# you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:ListBucket"
+      Resource:
+        Fn::Join:
+          - ""
+          - - "arn:aws:s3:::"
+            - ${env:S3_BUCKET}
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+      Resource:
+        Fn::Join:
+          - ""
+          - - "arn:aws:s3:::"
+            - ${env:S3_BUCKET}
+            - "/*"
+    - Effect: "Allow"
+      Action:
+        - "es:*"
+      Resource: "${opt:esdomainarn}/*"
+    - Effect: "Allow"
+      Action:
+        - "cloudwatch:PutMetricData"
+      Resource: "*"
+
+
+functions:
+  copyintoes:
+    handler: cloudtrail.insert
+    events:
+      - s3: ${env:S3_BUCKET}
+
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    BucketPolicy: 
+      Type: "AWS::S3::BucketPolicy"
+      Properties: 
+        Bucket: 
+          Ref: S3BucketEdyesedcloudtraillambda
+          # Serverless does string stuff here, see 
+          #  https://github.com/serverless/serverless/issues/2911#issuecomment-269016068
+          #Ref: S3Bucket${env:S3_BUCKET}
+        PolicyDocument: 
+          Version: "2012-10-17"
+          Statement: 
+            - 
+              Sid: "AWSCloudTrailAclCheck"
+              Effect: "Allow"
+              Principal: 
+                Service: "cloudtrail.amazonaws.com"
+              Action: "s3:GetBucketAcl"
+              Resource: 
+                - arn:aws:s3:::${env:S3_BUCKET}
+            - 
+              Sid: "AWSCloudTrailWrite"
+              Effect: "Allow"
+              Principal: 
+                Service: "cloudtrail.amazonaws.com"
+              Action: "s3:PutObject"
+              Resource:
+                Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - ${env:S3_BUCKET}
+                    - "/AWSLogs/"
+                    - { "Ref" : "AWS::AccountId" }
+                    - "/*"
+              Condition: 
+                StringEquals:
+                  s3:x-amz-acl: "bucket-owner-full-control"
+    LambdaTrail: 
+      DependsOn: 
+        - BucketPolicy
+      Type: "AWS::CloudTrail::Trail"
+      Properties: 
+        S3BucketName: 
+          Ref: S3BucketEdyesedcloudtraillambda
+          # Serverless does string stuff here, see 
+          #  https://github.com/serverless/serverless/issues/2911#issuecomment-269016068
+          #Ref: S3Bucket${env:S3_BUCKET}
+        IncludeGlobalServiceEvents: true
+        IsMultiRegionTrail: true
+        IsLogging: true
+        #CloudWatchLogsLogGroupArn: CloudTrail/DefaultLogGroup
+        #CloudWatchLogsRoleArn: CloudTrail_CloudWatchLogs_Role

@@ -1,0 +1,36 @@
+{"Records": 
+  [ 
+    {"eventVersion":"2.0",
+     "eventTime":"2016-12-20T04:11:55.438Z",
+     "requestParameters": {
+        "sourceIPAddress":"8.8.8.8"},
+        "s3": { 
+           "configurationId":"c159165f-763c-4e16-86fd-76475fc1ce05",
+           "object": {
+              "eTag":"1ef6d74a85e9783c6f2f871ec9eefe93",
+              "sequencer":"005858AF8B634039F1",
+              "key":"AWSLogs/XXX_YOUR_ACCOUNT_ID_XXX/CloudTrail/us-west-2/2016/12/20/XXX_YOUR_ACCOUNT_ID_XXX_CloudTrail_us-west-2_20161220T0410Z_K1DgFsmpQKVG9uAm.json.gz",
+              "size": 7753
+              },
+           "bucket": {
+              "arn":"arn:aws:s3:::edyesed-cloudtrail-lambda",
+              "name":"edyesed-cloudtrail-lambda",
+              "ownerIdentity": {
+                 "principalId":"AMA1Y00KAJG5O"
+              }
+           },
+           "s3SchemaVersion":"1.0"
+        },
+        "responseElements": {
+           "x-amz-id-2":"3JPHQxVhuvGuqmQm53YeoA0P2g6z5HaN4axlv9MV66fm5FJwxVXMpRqfnIGrNii83II7B3KrpCo=",
+           "x-amz-request-id":"F9A07CB7C19A6B68"
+         },
+         "awsRegion":"us-west-2",
+         "eventName":"ObjectCreated:Put",
+         "userIdentity": {
+            "principalId":"AWS:AROAI55D34KU2GUZPLP4Y:i-05fae8cf32c448483"
+         },
+         "eventSource":"aws:s3"
+    }
+  ]
+}
