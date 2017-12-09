@@ -1,4 +1,4 @@
-# read cloudtrail things dropped off at s3, put them in ES
+# read cloudtrail things dropped off at s3, put them in Dynamodb
 ## MINOR DRAGONS
 ## MINOR DRAGONS
 ##  I ran this with `S3_BUCKET=edyesed-cloudtrail-lambda serverless deploy 
@@ -18,7 +18,7 @@ provider:
 #  stage: dev
   region: us-west-2
   environment:
-    ELASTICSEARCH_URL: ${env:ELASTICSEARCH_URL}
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
 
 # you can add statements to the Lambda function's IAM Role here
   iamRoleStatements:
@@ -41,8 +41,13 @@ provider:
             - "/*"
     - Effect: "Allow"
       Action:
-        - "es:*"
-      Resource: "${opt:esdomainarn}/*"
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
     - Effect: "Allow"
       Action:
         - "cloudwatch:PutMetricData"
@@ -50,11 +55,10 @@ provider:
 
 
 functions:
-  copyintoes:
+  copyintostorage:
     handler: cloudtrail.insert
     events:
       - s3: ${env:S3_BUCKET}
-
 
 # you can add CloudFormation resource templates here
 resources:
@@ -110,3 +114,19 @@ resources:
         IsLogging: true
         #CloudWatchLogsLogGroupArn: CloudTrail/DefaultLogGroup
         #CloudWatchLogsRoleArn: CloudTrail_CloudWatchLogs_Role
+    EventsTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}

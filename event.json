@@ -9,7 +9,7 @@
            "object": {
               "eTag":"1ef6d74a85e9783c6f2f871ec9eefe93",
               "sequencer":"005858AF8B634039F1",
-              "key":"AWSLogs/XXX_YOUR_ACCOUNT_ID_XXX/CloudTrail/us-west-2/2016/12/20/XXX_YOUR_ACCOUNT_ID_XXX_CloudTrail_us-west-2_20161220T0410Z_K1DgFsmpQKVG9uAm.json.gz",
+              "key":"AWSLogs/514192441565/CloudTrail/us-west-2/2016/12/20/514192441565_CloudTrail_us-west-2_20161220T0410Z_K1DgFsmpQKVG9uAm.json.gz",
               "size": 7753
               },
            "bucket": {
